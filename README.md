@@ -1,4 +1,4 @@
-## Voice Fishing Detection on Federated Learning condition.
+## Voice Phishing Detection on Federated Learning condition.
 ___
 
 ### Abstract
@@ -20,4 +20,4 @@ ___
 | FedProx  | 96.61%   |    97.18%   |  96.52%   | 96.00%   |   0.039959   |
 
 ### Result Graph
-<img src="./result/20250208/ACC.png" width=350><img src="./result/20250208/Precision.png" width=350><img src="./result/20250208/Recall.png" width=350> <img src="./result/20250208/F1score.png" width=350>
+<img src="./result/20250208/ACC.png" width=350><img src="./result/20250208/Precision.png" width=350><img src="./result/20250208/Recall.png" width=350> <img src="./result/20250208/F1Score.png" width=350>
