@@ -9,10 +9,11 @@ from torch.optim.sgd import SGD
 from flwr.common import Context
 from utils import parser
 import logging
-eval_set = Voice_Fishing_Dataset("KorCCVi_v2.csv")
 dataset = Voice_Fishing_Dataset("KorCCVi_v2.csv")
+train_set, eval_set= random_split(dataset, [0.6, 0.4])
 args = parser.FederatedParser()
-eval_loader =DataLoader(eval_set, 8, shuffle=False, collate_fn=lambda x: x)
+train_loader = DataLoader(train_set, 8, True, collate_fn=lambda x: x)
+eval_loader = DataLoader(eval_set, 8, False, collate_fn=lambda x: x)
 seeding(args)
 class Client(NumPyClient):
     def __init__(self, net:nn.Module, epoch, train_loader, lossf, optimizer, DEVICE, trainF=train, validF=valid) -> None:
@@ -41,8 +42,6 @@ def client_fn(context: Context):
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     net=RNN(1,30,1,args.epoch,15000)
     net.to(DEVICE)
-    trainset, _ = random_split(Voice_Fishing_Dataset("KorCCVi_v2.csv"), [0.2, 0.8])
-    train_loader = DataLoader(trainset, 8, shuffle=True, collate_fn=lambda x: x)
     number_label = [dataset.normal, dataset.fishing]
     return Client(net, args.epoch, train_loader, nn.BCEWithLogitsLoss(torch.Tensor([1-x/sum(number_label) for x in(number_label)])).to(DEVICE), SGD(net.parameters(), lr=args.lr), DEVICE, train, valid).to_client()
 
