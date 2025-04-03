@@ -9,7 +9,8 @@ from torch.optim.sgd import SGD
 from flwr.common import Context
 from utils import parser
 import logging
-dataset = Voice_Fishing_Dataset("KorCCVi_v2.csv")
+word_length =9000
+dataset = Voice_Phishing_Dataset("KorCCVi_v2.csv")
 train_set, eval_set= random_split(dataset, [0.6, 0.4])
 args = parser.FederatedParser()
 train_loader = DataLoader(train_set, 8, True, collate_fn=lambda x: x)
@@ -40,13 +41,13 @@ class Client(NumPyClient):
 
 def client_fn(context: Context):
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net=RNN(1,30,1,args.epoch,15000)
+    net=RNN(1,30,1,args.epoch,word_length)
     net.to(DEVICE)
     number_label = [dataset.normal, dataset.fishing]
     return Client(net, args.epoch, train_loader, nn.BCEWithLogitsLoss(torch.Tensor([1-x/sum(number_label) for x in(number_label)])).to(DEVICE), SGD(net.parameters(), lr=args.lr), DEVICE, train, valid).to_client()
 
 def fl_save(server_round:int, parameters: fl.common.NDArrays, config, validF=valid):
-    net = RNN(1,30, 1, args.epoch, 15000)
+    net = RNN(1,30, 1, args.epoch, word_length)
     set_parameters(net, parameters)
     save(net.state_dict(), f"./Models/FedAvg/net.pt")
     print("model is saved")
@@ -54,7 +55,7 @@ def fl_save(server_round:int, parameters: fl.common.NDArrays, config, validF=val
 
 def fl_evaluate(server_round:int, parameters: fl.common.NDArrays, config, validF=valid):
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    net = RNN(1,30,1, args.epoch, 15000).to(DEVICE)
+    net = RNN(1,30,1, args.epoch, word_length).to(DEVICE)
     set_parameters(net, parameters)
     number_label = [dataset.normal, dataset.fishing]
     hist=valid(net, eval_loader, 1, nn.BCEWithLogitsLoss(torch.Tensor([1-x/sum(number_label) for x in(number_label)])).to(DEVICE), DEVICE)
